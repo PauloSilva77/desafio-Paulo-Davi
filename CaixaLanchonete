@@ -1,0 +1,116 @@
+    namespace LanchoneteDB {
+  
+
+    class Lanchonete {
+        private Dictionary<string, double> cardapio;
+
+        public Lanchonete() {
+            cardapio = new Dictionary<string, double>()
+            {
+            { "cafe", 3.00 },
+            { "chantily", 1.50 },
+            { "suco", 6.20 },
+            { "sanduiche", 6.50 },
+            { "queijo", 2.00 },
+            { "salgado", 7.25 },
+            { "combo1", 9.50 },
+            { "combo2", 7.50 }
+        };
+        }
+
+        public void Run() {
+            Console.WriteLine("Bem-vindo à Lanchonete da DB!");
+            Console.WriteLine("==============================");
+
+
+            Console.Write("Digite os itens da compra (código, quantidade), separados por vírgula (exemplo: cafe,2 suco,1): ");
+            string[] itensInput = Console.ReadLine().ToLower().Split(' ');
+
+            Console.Write("Digite a forma de pagamento (dinheiro, debito ou credito): ");
+            string formaPagamento = Console.ReadLine().ToLower();
+
+            List<string> itensComExtras = new List<string>();
+
+            foreach (string itemInfo in itensInput) {
+                string[] partesItem = itemInfo.Split(',');
+                if (partesItem.Length != 2) {
+                    Console.WriteLine("Formato de item inválido: " + itemInfo);
+                    continue;
+                }
+
+                string codigo = partesItem[0].Trim();
+                int quantidade = int.Parse(partesItem[1].Trim());
+
+                if (!cardapio.ContainsKey(codigo)) {
+                    Console.WriteLine("Item inválido: " + codigo);
+                    continue;
+                }
+
+                itensComExtras.Add(itemInfo);
+
+                if (CodigoRequerExtra(codigo)) {
+                    Console.Write($"Deseja adicionar algum extra para {codigo}? (Digite o código ou 'não'): ");
+                    string extra = Console.ReadLine().ToLower();
+
+                    if (extra != "não" && cardapio.ContainsKey(extra) && (extra == "chantily" || extra == "queijo")) {
+                        itensComExtras.Add(extra + ",1");
+                    }
+                    else if (extra != "não") {
+                        Console.WriteLine("Item extra não pode ser pedido sem o principal.");
+                    }
+                }
+            }
+
+            double valorTotal = CalcularValorDaCompra(formaPagamento, itensComExtras.ToArray());
+            Console.WriteLine($"Valor total a pagar: R$ {valorTotal:F2}");
+        }
+
+        public double CalcularValorDaCompra(string formaDePagamento, string[] itens) {
+            double valorTotal = 0.0;
+
+            foreach (string itemInfo in itens) {
+                string[] partesItem = itemInfo.Split(',');
+                if (partesItem.Length != 2) {
+                    Console.WriteLine("Formato de item inválido: " + itemInfo);
+                    continue;
+                }
+
+                string codigo = partesItem[0].Trim();
+                int quantidade = int.Parse(partesItem[1].Trim());
+
+                if (!cardapio.ContainsKey(codigo)) {
+                    Console.WriteLine("Item inválido: " + codigo);
+                    continue;
+                }
+
+                valorTotal += cardapio[codigo] * quantidade;
+            }
+
+            AplicarDescontoOuTaxa(ref valorTotal, formaDePagamento);
+
+            return valorTotal;
+        }
+
+        private bool CodigoRequerExtra(string codigo) {
+            return codigo != "chantily" && codigo != "queijo" && codigo != "combo1" && codigo != "combo2";
+        }
+
+        private void AplicarDescontoOuTaxa(ref double valorTotal, string formaPagamento) {
+            switch (formaPagamento) {
+                case "dinheiro":
+                    valorTotal *= 0.95;
+                    break;
+                case "credito":
+                    valorTotal *= 1.03;
+                    break;
+                case "debito":
+                    break;
+                default:
+                    Console.WriteLine("Forma de pagamento inválida!");
+                    Environment.Exit(0);
+                    break;
+            }
+        }
+    }
+}
+
