@@ -1,0 +1,7 @@
+namespace LanchoneteDB {
+
+    class Program {
+        static void Main(string[] args) {
+            Lanchonete lanchonete = new Lanchonete();
+            lanchonete.Run();
+        }
